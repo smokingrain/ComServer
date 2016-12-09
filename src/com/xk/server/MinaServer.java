@@ -50,8 +50,9 @@ public class MinaServer {
 		if(null==session){
 			return false;
 		}
-		WriteFuture future=session.write(msg);
-		return future.isWritten();
+		WriteFuture future = session.write(msg);
+		future.setWritten();
+		return true;
 	}
 	
 	public void stop(){
@@ -97,6 +98,7 @@ public class MinaServer {
 		@Override
 		public void sessionClosed(IoSession session) throws Exception {
 			Constant.clients.remove(session.getId());
+			Constant.hps.remove(session.getId());
 			Rooms room =  Constant.users.remove(session.getId());
 			if(null!=room){
 				PackageInfo pkg = new PackageInfo();
@@ -107,7 +109,7 @@ public class MinaServer {
 				c.setCid(session.getId());
 				c.setRoomid(room.getId());
 				pkg.setMsg(JSONUtil.toJosn(c));
-				StringUtil.handleMessage(pkg, MinaServer.this);
+				StringUtil.handleMessage(pkg, MinaServer.this, session);
 			}
 
 			super.sessionClosed(session);

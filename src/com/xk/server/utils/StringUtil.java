@@ -3,6 +3,7 @@ package com.xk.server.utils;
 import com.xk.server.MinaServer;
 import com.xk.server.ServerLauncher;
 import com.xk.server.beans.Client;
+import com.xk.server.beans.HConnection;
 import com.xk.server.beans.PackageInfo;
 import com.xk.server.beans.Rooms;
 
@@ -10,6 +11,7 @@ import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -42,13 +44,35 @@ public class StringUtil {
 		return ((str == null) || ("".equals(str)));
 	}
 
-	public static void handleMessage(PackageInfo info, MinaServer server) {
+	public static void handleMessage(PackageInfo info, MinaServer server, IoSession session) {
 		if (info != null)
 			if(-1L!=info.getTo()){
-				server.writeInfo(info.getTo(), JSONUtil.toJosn(info));
+				if(!server.writeInfo(info.getTo(), JSONUtil.toJosn(info))){
+					PackageInfo rst = new PackageInfo(info.getFrom(), "failed", -1L, "noclient", "server");
+					server.writeInfo(info.getFrom(), JSONUtil.toJosn(rst));
+				}
 				return;
 			}
-			if ("rooms".equals(info.getType())) {
+			if("hps".equals(info.getType())){
+				List<Map<String, String>> result = new ArrayList<Map<String,String>>();
+				for(HConnection conn : Constant.hps.values()) {
+					Map<String, String> props = new HashMap<String, String>();
+					props.put("name", conn.getName());
+					props.put("ip", conn.getIp());
+					props.put("id", conn.getSession().getId() + "");
+					result.add(props);
+				}
+				PackageInfo rst = new PackageInfo(info.getFrom(), JSONUtil.toJosn(result), -1L, info.getType(), "server");
+				server.writeInfo(rst.getTo(), JSONUtil.toJosn(rst));
+				return;
+			} else if ("regin".equals(info.getType())) {
+				if("hp".equals(info.getApp())) {
+					String name = info.getMsg();
+					String ip = session.getServiceAddress().toString();
+					HConnection conn = new HConnection(session, name, ip);
+					Constant.hps.put(info.getFrom(), conn);
+				}
+			} else if ("rooms".equals(info.getType())) {
 				System.out.println("query rooms");
 				String app = info.getApp();
 				Long from = info.getFrom();
@@ -160,10 +184,10 @@ public class StringUtil {
 			}
 	}
 
-	public static void handleMessage(String msg, MinaServer server,IoSession session) {
+	public static void handleMessage(String msg, MinaServer server, IoSession session) {
 		PackageInfo info = (PackageInfo) JSONUtil
 				.toBean(msg, PackageInfo.class);
 		info.setFrom(session.getId());
-		handleMessage(info, server);
+		handleMessage(info, server, session);
 	}
 }
