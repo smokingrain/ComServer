@@ -11,18 +11,21 @@ import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.codec.textline.TextLineCodecFactory;
+import org.apache.mina.filter.executor.ExecutorFilter;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 
 import com.xk.server.beans.Client;
 import com.xk.server.beans.PackageInfo;
 import com.xk.server.beans.Rooms;
+import com.xk.server.impl.ClientSession;
+import com.xk.server.impl.StanderedHandler;
+import com.xk.server.interfaces.ISession;
 import com.xk.server.utils.Constant;
 import com.xk.server.utils.JSONUtil;
 import com.xk.server.utils.StringUtil;
 
 public class MinaServer {
 
-	private MessageReciver mr;
 	private IoAcceptor acceptor;
 	
 	private MinaServer(){
@@ -35,14 +38,11 @@ public class MinaServer {
 	        acceptor.getSessionConfig().setReadBufferSize(2048);
 	        acceptor.getSessionConfig().setIdleTime(IdleStatus.BOTH_IDLE, 10);
 	        acceptor.getFilterChain().addLast("codec",new ProtocolCodecFilter(new TextLineCodecFactory(Charset.forName("UTF-8"))));
+	        acceptor.getFilterChain().addLast("threadPool", new ExecutorFilter());
 	        acceptor.setHandler(new MessageHandler());
 	        acceptor.bind(new InetSocketAddress(port)); 
 	        acceptor.bind();
 		}
-	}
-	
-	public void setmReciver(MessageReciver mr){
-		this.mr=mr;
 	}
 	
 	public boolean writeInfo(Long uid,String msg){
@@ -83,36 +83,26 @@ public class MinaServer {
 		@Override
 		public void messageReceived(IoSession session, Object message)
 				throws Exception {
-			System.out.println(message);
-			MinaServer.this.mr.reciveMessage(message.toString(),session);
+			PackageInfo info = JSONUtil.toBean(message.toString(), PackageInfo.class);
+			if(null == info) {
+				System.out.println(session.getId() + " has a message lost : " + message);
+				return;
+			}
+			StanderedHandler handler = (StanderedHandler) session.getAttribute("handler");
+			handler.handleMsg(info, null);
 		}
 
 		@Override
 		public void sessionOpened(IoSession session) throws Exception {
-			Constant.clients.put(session.getId(), session);
-			PackageInfo pi=new PackageInfo(session.getId(), session.getId()+"", -1L, "LOGIN", "gb");
-			session.write(JSONUtil.toJosn(pi));
-			super.sessionOpened(session);
+			ISession sess = new ClientSession();
+			sess.setIoSession(session);
+			StanderedHandler handler = new StanderedHandler(sess);
+			session.setAttribute("handler", handler);
 		}
 
 		@Override
 		public void sessionClosed(IoSession session) throws Exception {
-			Constant.clients.remove(session.getId());
-			Constant.hps.remove(session.getId());
-			Rooms room =  Constant.users.remove(session.getId());
-			if(null!=room){
-				PackageInfo pkg = new PackageInfo();
-				pkg.setType("exitRoom");
-				pkg.setTo(-1L);
-				pkg.setFrom(-1L);
-				Client c = new Client();
-				c.setCid(session.getId());
-				c.setRoomid(room.getId());
-				pkg.setMsg(JSONUtil.toJosn(c));
-				StringUtil.handleMessage(pkg, MinaServer.this, session);
-			}
-
-			super.sessionClosed(session);
+			
 		}
 		
 	}

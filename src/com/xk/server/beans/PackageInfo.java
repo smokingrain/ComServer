@@ -1,5 +1,7 @@
 package com.xk.server.beans;
 
+import com.xk.server.utils.JSONUtil;
+
 public class PackageInfo {
 	private Long to;
 	private String msg;
@@ -58,4 +60,11 @@ public class PackageInfo {
 	public void setApp(String app) {
 		this.app = app;
 	}
+
+	@Override
+	public String toString() {
+		return JSONUtil.toJosn(this);
+	}
+	
+	
 }
