@@ -10,7 +10,7 @@ public interface ISession {
 	
 	public String getSessionId();
 	
-	public void auth();
+	public boolean auth(PackageInfo info, ISession session);
 	
 	public boolean authed();
 	

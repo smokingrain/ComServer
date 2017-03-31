@@ -22,7 +22,7 @@ public class JSONUtil {
 
 	public static Map<String, Object> fromJson(String json) {
 		if (json == null) {
-			return Collections.EMPTY_MAP;
+			return Collections.emptyMap();
 		}
 
 		mapper.configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true);
@@ -33,7 +33,7 @@ public class JSONUtil {
 			return jsonMap;
 		} catch (Exception e) {
 		}
-		return Collections.EMPTY_MAP;
+		return Collections.emptyMap();
 	}
 
 	public static String toJosn(Object obj) {
