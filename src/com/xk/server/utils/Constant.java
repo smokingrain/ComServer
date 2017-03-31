@@ -9,9 +9,9 @@ import org.apache.mina.core.session.IoSession;
 
 public class Constant
 {
-  public static Map<Long, IoSession> clients = new ConcurrentHashMap<Long, IoSession>();
-  public static Map<Long, HConnection> hps = new ConcurrentHashMap<Long, HConnection>();
+  public static Map<String, IoSession> clients = new ConcurrentHashMap<String, IoSession>();
+  public static Map<String, HConnection> hps = new ConcurrentHashMap<String, HConnection>();
   public static Map<String, Rooms> roompool = new ConcurrentHashMap<String, Rooms>();
   public static Map<String, List<Rooms>> typedroompool = new ConcurrentHashMap<String, List<Rooms>>();
-  public static Map<Long, Rooms> users = new ConcurrentHashMap<Long, Rooms>();
+  public static Map<String, Rooms> users = new ConcurrentHashMap<String, Rooms>();
 }

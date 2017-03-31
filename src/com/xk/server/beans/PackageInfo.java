@@ -3,16 +3,16 @@ package com.xk.server.beans;
 import com.xk.server.utils.JSONUtil;
 
 public class PackageInfo {
-	private Long to;
+	private String to;
 	private String msg;
-	private Long from;
+	private String from;
 	private String type;
 	private String app;
 
 	public PackageInfo() {
 	}
 
-	public PackageInfo(Long to, String msg, Long from, String type,
+	public PackageInfo(String to, String msg, String from, String type,
 			String app) {
 		this.to = to;
 		this.msg = msg;
@@ -21,11 +21,11 @@ public class PackageInfo {
 		setApp(app);
 	}
 
-	public Long getTo() {
+	public String getTo() {
 		return this.to;
 	}
 
-	public void setTo(Long to) {
+	public void setTo(String to) {
 		this.to = to;
 	}
 
@@ -37,11 +37,11 @@ public class PackageInfo {
 		this.msg = msg;
 	}
 
-	public Long getFrom() {
+	public String getFrom() {
 		return this.from;
 	}
 
-	public void setFrom(Long from) {
+	public void setFrom(String from) {
 		this.from = from;
 	}
 

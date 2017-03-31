@@ -14,15 +14,12 @@ import org.apache.mina.filter.codec.textline.TextLineCodecFactory;
 import org.apache.mina.filter.executor.ExecutorFilter;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 
-import com.xk.server.beans.Client;
 import com.xk.server.beans.PackageInfo;
-import com.xk.server.beans.Rooms;
 import com.xk.server.impl.ClientSession;
 import com.xk.server.impl.StanderedHandler;
 import com.xk.server.interfaces.ISession;
 import com.xk.server.utils.Constant;
 import com.xk.server.utils.JSONUtil;
-import com.xk.server.utils.StringUtil;
 
 public class MinaServer {
 
@@ -45,7 +42,7 @@ public class MinaServer {
 		}
 	}
 	
-	public boolean writeInfo(Long uid,String msg){
+	public boolean writeInfo(String uid,String msg){
 		IoSession session=Constant.clients.get(uid);
 		if(null==session){
 			return false;

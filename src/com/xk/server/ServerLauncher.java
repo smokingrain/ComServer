@@ -2,6 +2,10 @@ package com.xk.server;
 
 import java.io.IOException;
 
+import com.xk.server.impl.AuthInterceptor;
+import com.xk.server.impl.RoomInterceptor;
+import com.xk.server.managers.InterceptorManager;
+
 public class ServerLauncher {
 
 	private MinaServer sl;
@@ -18,6 +22,9 @@ public class ServerLauncher {
 			e.printStackTrace();
 			System.out.println("·þÎñÆô¶¯Ê§°Ü");
 		}
+		InterceptorManager.addInteceptor(new AuthInterceptor());
+		InterceptorManager.addInteceptor(new RoomInterceptor());
+		
 		
 	}
 	
