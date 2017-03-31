@@ -29,20 +29,20 @@ public class RoomInterceptor implements IMessageHandler {
 			IRoom room = RoomManager.createRoom(info);
 			if(null != room) {
 				String id = room.getId();
-				PackageInfo created = new PackageInfo(info.getFrom(), id, "server", type, info.getApp());
+				PackageInfo created = new PackageInfo(info.getFrom(), id, "server", type, info.getApp(), 0);
 				session.sendMsg(created);
 			}else {
-				PackageInfo created = new PackageInfo(info.getFrom(), null, "server", type, info.getApp());
+				PackageInfo created = new PackageInfo(info.getFrom(), null, "server", type, info.getApp(), 0);
 				session.sendMsg(created);
 			}
 			return true;
 		}else if("rooms".equals(type)) {
 			List<IRoom> rooms = RoomManager.getRooms(info.getApp());
 			String msg = JSONUtil.toJosn(rooms);
-			PackageInfo created = new PackageInfo(info.getFrom(), msg, "server", type, info.getApp());
+			PackageInfo created = new PackageInfo(info.getFrom(), msg, "server", type, info.getApp(), 0);
 			session.sendMsg(created);
 			return true;
-		}else if("join".equals(type)) {
+		}else {
 			String to = info.getTo();
 			IRoom room = RoomManager.getRoom(to);
 			if(null != room) {
@@ -50,8 +50,6 @@ public class RoomInterceptor implements IMessageHandler {
 			}
 			return true;
 		}
-		
-		return false;
 	}
 
 }

@@ -7,9 +7,12 @@ import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.xk.server.beans.PackageInfo;
 import com.xk.server.interfaces.IRoom;
 import com.xk.server.interfaces.ISession;
+import com.xk.server.managers.SessionManager;
+import com.xk.server.utils.JSONUtil;
 import com.xk.server.utils.StringUtil;
 
 /**
@@ -29,13 +32,20 @@ public class CCRoom implements IRoom {
 	private Integer type;
 	private String name;
 	private String id;
-	private List<String> members = new ArrayList<String>();
-	private List<PackageInfo> msgs = new ArrayList<PackageInfo>();
+	@JsonIgnore
 	private boolean destroied = false;
 	
+	private List<String> members = new ArrayList<String>();
+	
+	@JsonIgnore
+	private int version = 0;
+	
+	@JsonIgnore
+	private List<PackageInfo> msgs = new ArrayList<PackageInfo>();
 	/**
 	 * 房间操作锁，任何房间更改必须保证同步
 	 */
+	@JsonIgnore
 	private ReentrantReadWriteLock lock;
 	
 	public CCRoom(String creator, Integer type) {
@@ -57,13 +67,19 @@ public class CCRoom implements IRoom {
 	}
 
 	@Override
-	public List<String> getMembers() {
-		return Collections.unmodifiableList(members);
+	public List<String> members() {
+		lock.readLock().lock();
+		List<String> result = Collections.unmodifiableList(members);
+		lock.readLock().unlock();
+		return result;
 	}
 
 	@Override
-	public List<PackageInfo> getMessages(Integer last) {
-		return Collections.unmodifiableList(msgs);
+	public List<PackageInfo> messages(Integer last) {
+		lock.readLock().lock();
+		List<PackageInfo> result = Collections.unmodifiableList(msgs);
+		lock.readLock().unlock();
+		return result;
 	}
 
 	@Override
@@ -71,7 +87,14 @@ public class CCRoom implements IRoom {
 		if("join".equals(info.getType())) {
 			if(type == 1) {
 				String from = info.getFrom();
-				join(from);
+				if(join(from)) {
+					PackageInfo joined = new PackageInfo(from, JSONUtil.toJosn(this), getId(), info.getType(), info.getApp(), info.getVersion());
+					keepVersion(joined);
+					for(String client : members) {
+						info.setTo(client);
+						SessionManager.getSession(client).sendMsg(info);
+					}
+				}
 			}
 		} else if("exitRoom".equals(info.getType())) {
 			String from = info.getFrom();
@@ -83,12 +106,37 @@ public class CCRoom implements IRoom {
 		return false;
 	}
 	
-	private void join(String client) {
+	
+	private boolean checkVersion(PackageInfo info) {
+		lock.readLock().lock();
+		boolean valied = info.getVersion() - version == 1;
+		lock.readLock().unlock();
+		return valied;
+	}
+	
+	private PackageInfo keepVersion(PackageInfo info) {
 		lock.writeLock().lock();
+		info.setVersion(++version);
+		this.msgs.add(info);
+		lock.writeLock().unlock();
+		return info;
+	}
+	
+	/**
+	 * 加入房间
+	 * @param client
+	 */
+	private boolean join(String client) {
+		lock.writeLock().lock();
+		boolean joined = false;
 		if(!destroied) {
-			members.add(client);
+			if(members.size() == 1) {
+				members.add(client);
+				joined = true;
+			}
 		}
 		lock.writeLock().unlock();
+		return joined;
 	}
 	
 	/**
@@ -112,6 +160,7 @@ public class CCRoom implements IRoom {
 	
 
 	@Override
+	@JsonIgnore
 	public Integer getWeight() {
 		return 0;
 	}

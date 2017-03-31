@@ -11,9 +11,9 @@ public interface IRoom extends IMessageHandler{
 	
 	public String getName();
 	
-	public List<String> getMembers();
+	public List<String> members();
 	
-	public List<PackageInfo> getMessages(Integer last);
+	public List<PackageInfo> messages(Integer last);
 	
 	public void destroy();
 	

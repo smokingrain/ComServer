@@ -19,7 +19,7 @@ public class AuthInterceptor implements IMessageHandler {
 			return true;
 		}else if("auth".equals(info.getType())) {
 			boolean auth = session.auth(info, session);
-			PackageInfo authed = new PackageInfo(from, String.valueOf(auth), "server", info.getType(), info.getApp());
+			PackageInfo authed = new PackageInfo(from, String.valueOf(auth), "server", info.getType(), info.getApp(),0);
 			session.sendMsg(authed);
 			return true;
 		}

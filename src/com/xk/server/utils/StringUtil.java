@@ -48,7 +48,7 @@ public class StringUtil {
 		if (info != null)
 			if("-1".equals(info.getTo())){
 				if(!server.writeInfo(info.getTo(), JSONUtil.toJosn(info))){
-					PackageInfo rst = new PackageInfo(info.getFrom(), "failed", "-1", "noclient", "server");
+					PackageInfo rst = new PackageInfo(info.getFrom(), "failed", "-1", "noclient", "server", 0);
 					server.writeInfo(info.getFrom(), JSONUtil.toJosn(rst));
 				}
 				return;
@@ -62,7 +62,7 @@ public class StringUtil {
 					props.put("id", conn.getSession().getId() + "");
 					result.add(props);
 				}
-				PackageInfo rst = new PackageInfo(info.getFrom(), JSONUtil.toJosn(result), "-1", info.getType(), "server");
+				PackageInfo rst = new PackageInfo(info.getFrom(), JSONUtil.toJosn(result), "-1", info.getType(), "server", 0);
 				server.writeInfo(rst.getTo(), JSONUtil.toJosn(rst));
 				return;
 			} else if ("regin".equals(info.getType())) {

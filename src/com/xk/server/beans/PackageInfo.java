@@ -8,17 +8,19 @@ public class PackageInfo {
 	private String from;
 	private String type;
 	private String app;
+	private int version = 0;
 
 	public PackageInfo() {
 	}
 
 	public PackageInfo(String to, String msg, String from, String type,
-			String app) {
+			String app, int version) {
 		this.to = to;
 		this.msg = msg;
 		this.from = from;
 		this.type = type;
-		setApp(app);
+		this.app = app;
+		this.setVersion(version);
 	}
 
 	public String getTo() {
@@ -64,6 +66,14 @@ public class PackageInfo {
 	@Override
 	public String toString() {
 		return JSONUtil.toJosn(this);
+	}
+
+	public int getVersion() {
+		return version;
+	}
+
+	public void setVersion(int version) {
+		this.version = version;
 	}
 	
 	
