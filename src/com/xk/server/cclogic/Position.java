@@ -8,6 +8,11 @@ import java.util.Random;
 
 
 public class Position {
+	
+	
+	static{
+		init();
+	}
 
 	public static Random random = new Random();
 
@@ -1018,7 +1023,7 @@ public class Position {
 	public static short[] bookMove = new short[MAX_BOOK_SIZE];
 	public static short[] bookValue = new short[MAX_BOOK_SIZE];
 
-	public static void init() {
+	private static void init() {
 		InputStream in = Position.class.getResourceAsStream("data/book/BOOK.DAT");
 		if (in != null) {
 			try {

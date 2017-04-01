@@ -1,5 +1,6 @@
 package com.xk.server.impl;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.xk.server.beans.PackageInfo;
 import com.xk.server.interfaces.IClient;
 import com.xk.server.interfaces.IRoom;
@@ -9,6 +10,7 @@ public class XClient implements IClient {
 
 	private String id;
 	private String name;
+	@JsonIgnore
 	private IRoom room;
 	
 	public XClient(String id, String name) {
@@ -33,11 +35,13 @@ public class XClient implements IClient {
 	}
 
 	@Override
+	@JsonIgnore
 	public IRoom getRoom() {
 		return room;
 	}
 	
 	@Override
+	@JsonIgnore
 	public void setRoom(IRoom room) {
 		this.room = room;
 	}
