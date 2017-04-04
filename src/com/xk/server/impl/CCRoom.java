@@ -1,7 +1,9 @@
 package com.xk.server.impl;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,6 +18,7 @@ import com.xk.server.cclogic.Search;
 import com.xk.server.interfaces.IClient;
 import com.xk.server.interfaces.IRoom;
 import com.xk.server.interfaces.ISession;
+import com.xk.server.managers.RoomManager;
 import com.xk.server.managers.SessionManager;
 import com.xk.server.utils.JSONUtil;
 import com.xk.server.utils.StringUtil;
@@ -37,7 +40,7 @@ public class CCRoom implements IRoom {
 	private Integer type;
 	private String name;
 	private String id;
-	
+	private String createTime = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
 	private List<String> members = new ArrayList<String>();
 	
 	@JsonIgnore
@@ -126,7 +129,7 @@ public class CCRoom implements IRoom {
 					keepVersion(joined);
 					for(String client : this.members) {
 						info.setTo(client);
-						SessionManager.getSession(client).sendMsg(info);
+						SessionManager.getSession(client).sendMsg(joined);
 					}
 				} else {
 					PackageInfo joined = new PackageInfo(from, null, getId(), info.getType(), info.getApp(), info.getVersion());
@@ -399,8 +402,41 @@ public class CCRoom implements IRoom {
 		creator = null;
 		members.clear();
 		msgs.clear();
+		RoomManager.destoryRoom(this, "cc");
 		destroied = true;
 		lock.writeLock().unlock();
+	}
+
+	public String getCreateTime() {
+		return createTime;
+	}
+
+	public void setCreateTime(String createTime) {
+		this.createTime = createTime;
+	}
+
+	public Integer getType() {
+		return type;
+	}
+
+	public void setType(Integer type) {
+		this.type = type;
+	}
+
+	public String getCreator() {
+		return creator;
+	}
+
+	public void setCreator(String creator) {
+		this.creator = creator;
+	}
+
+	public List<String> getMembers() {
+		return members;
+	}
+
+	public void setMembers(List<String> members) {
+		this.members = members;
 	}
 	
 

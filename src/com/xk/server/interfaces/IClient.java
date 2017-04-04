@@ -12,9 +12,9 @@ public interface IClient {
 	
 	public void close();
 	
-	public IRoom getRoom();
+	public String getRoom();
 	
-	public void setRoom(IRoom room);
+	public void setRoom(String room);
 	
 	public String toJSON();
 	

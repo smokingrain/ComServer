@@ -52,7 +52,7 @@ public class RoomManager {
 		Integer type = (Integer) roomInfo.get("type");
 		CCRoom room = new CCRoom(info.getFrom(), type);
 		room.setName(name);
-		allRooms.put(name, room);
+		allRooms.put(room.getId(), room);
 		List<IRoom> rooms = typedRooms.get(info.getApp());
 		if(null == rooms) {
 			rooms = new ArrayList<IRoom>();
@@ -60,6 +60,19 @@ public class RoomManager {
 		}
 		rooms.add(room);
 		return room;
+	}
+	
+	/**
+	 * 
+	 * @param room
+	 */
+	public static void destoryRoom(IRoom room, String type) {
+		String name = room.getName();
+		allRooms.remove(name);
+		List<IRoom> rooms = typedRooms.get(type);
+		if(null != rooms) {
+			rooms.remove(room);
+		}
 	}
 	
 }

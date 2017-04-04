@@ -10,8 +10,7 @@ public class XClient implements IClient {
 
 	private String id;
 	private String name;
-	@JsonIgnore
-	private IRoom room;
+	private String room;
 	
 	public XClient(String id, String name) {
 		this.id = id;
@@ -35,14 +34,12 @@ public class XClient implements IClient {
 	}
 
 	@Override
-	@JsonIgnore
-	public IRoom getRoom() {
+	public String getRoom() {
 		return room;
 	}
 	
 	@Override
-	@JsonIgnore
-	public void setRoom(IRoom room) {
+	public void setRoom(String room) {
 		this.room = room;
 	}
 	

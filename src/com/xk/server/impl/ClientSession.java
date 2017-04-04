@@ -63,6 +63,7 @@ public class ClientSession implements ISession {
 		}
 		XClient client = new XClient(from, name);
 		SessionManager.createSession(from, session, client);
+		authed = true;
 		return authed;
 	}
 	

@@ -16,7 +16,7 @@ public class StanderedHandler implements IMessageHandler {
 	@Override
 	public boolean handleMsg(PackageInfo info, ISession session) {
 		info.setFrom(this.session.getSessionId());
-		if(InterceptorManager.intercept(info, session)) {
+		if(InterceptorManager.intercept(info, this.session)) {
 			return true;
 		}
 		return false;
