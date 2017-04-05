@@ -14,7 +14,7 @@ public class ServerLauncher {
 	}
 
 	public void lunch(){
-		int port = 5492;
+		int port = 5666;
 		sl = MinaServer.getInstance();
 		try {
 			sl.init(port);

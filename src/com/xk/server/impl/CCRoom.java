@@ -118,14 +118,16 @@ public class CCRoom implements IRoom {
 				if(join(from)) {
 					List<IClient> members = new ArrayList<IClient>();
 					for(String client: this.members) {
-						members.add(SessionManager.getClient(client));
+						IClient x = SessionManager.getClient(client);
+						x.setRoom(id);
+						members.add(x);
 					}
 					Map<String, Object> obj = new HashMap<String, Object>();
 					obj.put("id", id);
 					obj.put("name", name);
 					obj.put("creator", SessionManager.getClient(creator));
 					obj.put("members", members);
-					PackageInfo joined = new PackageInfo(from, JSONUtil.toJosn(this), getId(), info.getType(), info.getApp(), info.getVersion());
+					PackageInfo joined = new PackageInfo(from, JSONUtil.toJosn(obj), from, info.getType(), info.getApp(), info.getVersion());
 					keepVersion(joined);
 					for(String client : this.members) {
 						info.setTo(client);
@@ -199,6 +201,7 @@ public class CCRoom implements IRoom {
 		if(p1Ready && p2Ready) {
 			pos.fromFen(Position.STARTUP_FEN[0]);
 			pos.changeSide();
+			cmdInfo.put("fen", pos.toFen());
 			result = true;
 		}
 		lock.writeLock().unlock();

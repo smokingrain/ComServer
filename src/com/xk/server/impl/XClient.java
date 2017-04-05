@@ -1,9 +1,7 @@
 package com.xk.server.impl;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.xk.server.beans.PackageInfo;
 import com.xk.server.interfaces.IClient;
-import com.xk.server.interfaces.IRoom;
 import com.xk.server.utils.JSONUtil;
 
 public class XClient implements IClient {
@@ -52,6 +50,10 @@ public class XClient implements IClient {
 	@Override
 	public String getName() {
 		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
 	}
 
 }
