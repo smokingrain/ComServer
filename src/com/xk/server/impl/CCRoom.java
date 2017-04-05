@@ -204,6 +204,13 @@ public class CCRoom implements IRoom {
 			cmdInfo.put("fen", pos.toFen());
 			result = true;
 		}
+		info.setMsg(JSONUtil.toJosn(cmdInfo));
+		info.setVersion(++version);
+		this.msgs.add(info);
+		for(String member : members) {
+			info.setTo(member);
+			SessionManager.getSession(member).sendMsg(info);
+		}
 		lock.writeLock().unlock();
 		return result;
 	}
