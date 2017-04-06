@@ -22,7 +22,7 @@ public class SessionManager {
 		return sessions.get(id);
 	}
 	
-	public static void createSession(String id, ISession session, XClient client) {
+	public static void createSession(String id, ISession session, IClient client) {
 		sessions.put(id, session);
 		clients.put(id, client);
 	}

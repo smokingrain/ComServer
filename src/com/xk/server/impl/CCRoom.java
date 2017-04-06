@@ -114,29 +114,7 @@ public class CCRoom implements IRoom {
 	public boolean handleMsg(PackageInfo info, ISession session) {
 		if("join".equals(info.getType())) {
 			if(type == 1) {
-				String from = info.getFrom();
-				if(join(from)) {
-					List<IClient> members = new ArrayList<IClient>();
-					for(String client: this.members) {
-						IClient x = SessionManager.getClient(client);
-						x.setRoom(id);
-						members.add(x);
-					}
-					Map<String, Object> obj = new HashMap<String, Object>();
-					obj.put("id", id);
-					obj.put("name", name);
-					obj.put("creator", SessionManager.getClient(creator));
-					obj.put("members", members);
-					PackageInfo joined = new PackageInfo(from, JSONUtil.toJosn(obj), from, info.getType(), info.getApp(), info.getVersion());
-					keepVersion(joined);
-					for(String client : this.members) {
-						info.setTo(client);
-						SessionManager.getSession(client).sendMsg(joined);
-					}
-				} else {
-					PackageInfo joined = new PackageInfo(from, null, getId(), info.getType(), info.getApp(), info.getVersion());
-					session.sendMsg(joined);
-				}
+				join(info);
 			}
 		} else if("exitRoom".equals(info.getType())) {
 			String from = info.getFrom();
@@ -183,14 +161,45 @@ public class CCRoom implements IRoom {
 	 */
 	private boolean ready(Map<String, Object> cmdInfo,PackageInfo info) {
 		lock.writeLock().lock();
-		if((p1Ready && p2Ready) || !checkVersion(info)) {
+		if(destroied) {
 			lock.writeLock().unlock();
 			return false;
 		}
-		if(creator.equals(info.getFrom())) {
+		if((p1Ready && p2Ready) || !checkVersion(info)) {//都准备好了或者消息版本不对
+			lock.writeLock().unlock();
+			return false;
+		}
+		if(creator.equals(info.getFrom())) {//创建者准备
 			p1Ready = true;
+			if(type == 2) {//机器人自动加入房间，并准备
+				if(members.size() == 1) {
+					members.add(id);
+					Robot robot = new Robot();
+					RobotSession se = new RobotSession();
+					SessionManager.createSession(id, se, robot);
+					List<IClient> members = new ArrayList<IClient>();
+					for(String client: this.members) {
+						IClient x = SessionManager.getClient(client);
+						x.setRoom(id);
+						members.add(x);
+					}
+					Map<String, Object> obj = new HashMap<String, Object>();
+					obj.put("id", id);
+					obj.put("name", name);
+					obj.put("creator", SessionManager.getClient(creator));
+					obj.put("members", members);
+					PackageInfo joined = new PackageInfo(id, JSONUtil.toJosn(obj), id, "join", info.getApp(), info.getVersion());
+					joined.setVersion(++version);
+					this.msgs.add(joined);
+					for(String client : this.members) {
+						info.setTo(client);
+						SessionManager.getSession(client).sendMsg(joined);
+					}
+				}
+				p2Ready = true;
+			}
 		} else {
-			for(String client : members) {
+			for(String client : members) {//加入者准备
 				if(client.equals(info.getFrom())) {
 					p2Ready = true;
 					break;
@@ -198,7 +207,7 @@ public class CCRoom implements IRoom {
 			}
 		}
 		boolean result = false;
-		if(p1Ready && p2Ready) {
+		if(p1Ready && p2Ready) {//通知客户端都准备完毕
 			pos.fromFen(Position.STARTUP_FEN[0]);
 			pos.changeSide();
 			cmdInfo.put("fen", pos.toFen());
@@ -223,6 +232,10 @@ public class CCRoom implements IRoom {
 	 */
 	private boolean move(Map<String, Object> cmdInfo, PackageInfo info) {
 		lock.writeLock().lock();
+		if(destroied) {
+			lock.writeLock().unlock();
+			return false;
+		}
 		String from = info.getFrom();
 		boolean turnRight = false;
 		if(creator.equals(from)) {
@@ -317,6 +330,10 @@ public class CCRoom implements IRoom {
 	 */
 	private boolean undo(Map<String, Object> cmdInfo, PackageInfo info) {
 		lock.writeLock().lock();
+		if(destroied) {
+			lock.writeLock().unlock();
+			return false;
+		}
 		
 		boolean result = false;
 		lock.writeLock().unlock();
@@ -329,6 +346,10 @@ public class CCRoom implements IRoom {
 	 */
 	private boolean givein(Map<String, Object> cmdInfo, PackageInfo info) {
 		lock.writeLock().lock();
+		if(destroied) {
+			lock.writeLock().unlock();
+			return false;
+		}
 		
 		boolean result = false;
 		lock.writeLock().unlock();
@@ -350,29 +371,49 @@ public class CCRoom implements IRoom {
 	 * @param info
 	 * @return
 	 */
-	private PackageInfo keepVersion(PackageInfo info) {
-		lock.writeLock().lock();
-		info.setVersion(++version);
-		this.msgs.add(info);
-		lock.writeLock().unlock();
-		return info;
-	}
+//	private PackageInfo keepVersion(PackageInfo info) {
+//		lock.writeLock().lock();
+//		info.setVersion(++version);
+//		this.msgs.add(info);
+//		lock.writeLock().unlock();
+//		return info;
+//	}
 	
 	/**
 	 * 加入房间
 	 * @param client
 	 */
-	private boolean join(String client) {
+	private boolean join(PackageInfo info) {
 		lock.writeLock().lock();
-		boolean joined = false;
 		if(!destroied) {
+			String from = info.getFrom();
 			if(members.size() == 1) {
-				members.add(client);
-				joined = true;
+				members.add(from);
+				List<IClient> members = new ArrayList<IClient>();
+				for(String client: this.members) {
+					IClient x = SessionManager.getClient(client);
+					x.setRoom(id);
+					members.add(x);
+				}
+				Map<String, Object> obj = new HashMap<String, Object>();
+				obj.put("id", id);
+				obj.put("name", name);
+				obj.put("creator", SessionManager.getClient(creator));
+				obj.put("members", members);
+				PackageInfo joined = new PackageInfo(from, JSONUtil.toJosn(obj), from, info.getType(), info.getApp(), info.getVersion());
+				joined.setVersion(++version);
+				this.msgs.add(joined);
+				for(String client : this.members) {
+					info.setTo(client);
+					SessionManager.getSession(client).sendMsg(joined);
+				}
+			}else {
+				PackageInfo joined = new PackageInfo(from, null, getId(), info.getType(), info.getApp(), info.getVersion());
+				SessionManager.getSession(from).sendMsg(joined);
 			}
 		}
 		lock.writeLock().unlock();
-		return joined;
+		return true;
 	}
 	
 	/**
