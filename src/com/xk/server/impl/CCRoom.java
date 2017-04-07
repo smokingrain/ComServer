@@ -268,13 +268,15 @@ public class CCRoom implements IRoom {
 				int srcy = Position.RANK_Y(Position.SRC(mvLast))-Position.RANK_TOP;
 				int dstx = Position.FILE_X(Position.DST(mvLast))-Position.FILE_LEFT;
 				int dsty = Position.RANK_Y(Position.DST(mvLast))-Position.RANK_TOP;
-				int csrc = srcx*10+srcy;
-				int cdest = dstx*10+dsty;
+				int sqSrc=Position.COORD_XY(srcx + Position.FILE_LEFT, srcy + Position.RANK_TOP);
+				int sqDst = Position.COORD_XY(dstx + Position.FILE_LEFT, dsty + Position.RANK_TOP);
+//				int csrc = srcx*10+srcy;
+//				int cdest = dstx*10+dsty;
 				Map<String, Object> cinfo = new HashMap<String, Object>();
-				cinfo.put("src", csrc);
-				cinfo.put("dest", cdest);
+				cinfo.put("src", sqSrc);
+				cinfo.put("dest", sqDst);
 				cinfo.put("cmd", cmdInfo.get("cmd"));
-				int cgo = go(csrc, cdest, cinfo);
+				int cgo = go(sqSrc, sqDst, cinfo);
 				if(cgo >= 0) {
 					PackageInfo cmove = new PackageInfo(from, JSONUtil.toJosn(cinfo), name, info.getType(), info.getApp(), ++version);
 					this.msgs.add(cmove);
@@ -294,14 +296,22 @@ public class CCRoom implements IRoom {
 		int mv=Position.MOVE(src, dest);
 		if (pos.legalMove(mv)) {
 			if (pos.makeMove(mv)) {
+				int srcx = Position.FILE_X(Position.SRC(mv))-Position.FILE_LEFT;
+				int srcy = Position.RANK_Y(Position.SRC(mv))-Position.RANK_TOP;
+				int dstx = Position.FILE_X(Position.DST(mv))-Position.FILE_LEFT;
+				int dsty = Position.RANK_Y(Position.DST(mv))-Position.RANK_TOP;
+				int srcS = srcx * 10 + srcy;
+				int destS = dstx * 10 + dsty;
+				cmdInfo.put("src", srcS);
+				cmdInfo.put("dest", destS);
 				result = 0;
 				cmdInfo.put("fen", pos.toFen());
 				if (pos.captured()) {//吃棋子
 					pos.setIrrev();
-					cmdInfo.put("cap", true);
+					cmdInfo.put("cap", "cap");
 				}
 				if(pos.inCheck()) {//将军
-					cmdInfo.put("chk", true);
+					cmdInfo.put("chk", "chk");
 				}
 				int vlRep = pos.repStatus(3);
 				if( vlRep> 0) {//赖皮棋
@@ -310,12 +320,18 @@ public class CCRoom implements IRoom {
 						vlRep < -Position.WIN_VALUE ? 1 : 0);
 					cmdInfo.put("rep", rst);
 					result = 1;
+					p1Ready = false;
+					p2Ready = false;
 				}
 				if(pos.mvList.size() > 100) {//平局
-					cmdInfo.put("peace", true);
+					cmdInfo.put("peace", "peace");
+					p1Ready = false;
+					p2Ready = false;
 				}
 				if(pos.isMate()) {//将死
-					cmdInfo.put("mat", true);
+					cmdInfo.put("mat", "mat");
+					p1Ready = false;
+					p2Ready = false;
 				}
 				turn *= -1;
 			}
@@ -346,11 +362,18 @@ public class CCRoom implements IRoom {
 	 */
 	private boolean givein(Map<String, Object> cmdInfo, PackageInfo info) {
 		lock.writeLock().lock();
-		if(destroied) {
+		if(destroied || !checkVersion(info)) {
 			lock.writeLock().unlock();
 			return false;
 		}
-		
+		info.setVersion(++version);
+		msgs.add(info);
+		for(String client : members) {
+			info.setTo(client);
+			SessionManager.getSession(client).sendMsg(info);
+		}
+		p1Ready = false;
+		p2Ready = false;
 		boolean result = false;
 		lock.writeLock().unlock();
 		return result;
