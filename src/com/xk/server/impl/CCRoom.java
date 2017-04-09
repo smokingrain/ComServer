@@ -374,9 +374,8 @@ public class CCRoom implements IRoom {
 		}
 		p1Ready = false;
 		p2Ready = false;
-		boolean result = false;
 		lock.writeLock().unlock();
-		return result;
+		return true;
 	}
 	
 	/**
