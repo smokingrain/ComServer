@@ -428,6 +428,7 @@ public class CCRoom implements IRoom {
 		try {
 			if(!destroied) {
 				String from = info.getFrom();
+				SessionManager.getClient(from).setRoom(getId());
 				if(members.size() == 1) {
 					members.add(from);
 					List<IClient> members = new ArrayList<IClient>();
@@ -484,7 +485,7 @@ public class CCRoom implements IRoom {
 			lock.writeLock().unlock();
 		}
 		
-		return size == 0;
+		return size == 0 || type == 2;
 	}
 	
 

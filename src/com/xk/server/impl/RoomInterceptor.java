@@ -8,6 +8,7 @@ import com.xk.server.interfaces.IMessageHandler;
 import com.xk.server.interfaces.IRoom;
 import com.xk.server.interfaces.ISession;
 import com.xk.server.managers.RoomManager;
+import com.xk.server.managers.SessionManager;
 import com.xk.server.utils.JSONUtil;
 
 public class RoomInterceptor implements IMessageHandler {
@@ -28,6 +29,7 @@ public class RoomInterceptor implements IMessageHandler {
 		if("croom".equals(type)) {
 			IRoom room = RoomManager.createRoom(info);
 			if(null != room) {
+				SessionManager.getClient(session.getSessionId()).setRoom(room.getId());
 				String id = room.getId();
 				PackageInfo created = new PackageInfo(info.getFrom(), id, "server", type, info.getApp(), 0);
 				session.sendMsg(created);

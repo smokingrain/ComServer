@@ -3,7 +3,6 @@ package com.xk.server.managers;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import com.xk.server.impl.XClient;
 import com.xk.server.interfaces.IClient;
 import com.xk.server.interfaces.ISession;
 

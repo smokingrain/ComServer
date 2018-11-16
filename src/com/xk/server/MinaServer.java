@@ -99,7 +99,6 @@ public class MinaServer {
 
 		@Override
 		public void sessionClosed(IoSession session) throws Exception {
-			System.out.println(session.getId() + " closed!");
 			PackageInfo info = new PackageInfo(null, "", null, "exit", "server", 0);
 			StanderedHandler handler = (StanderedHandler) session.getAttribute("handler");
 			handler.handleMsg(info, null);
