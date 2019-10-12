@@ -24,7 +24,7 @@ public class ServerLauncher {
 		}
 		InterceptorManager.addInteceptor(new AuthInterceptor());
 		InterceptorManager.addInteceptor(new RoomInterceptor());
-		
+		System.out.println("finish");
 		
 	}
 	
